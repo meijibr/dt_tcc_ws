@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity(name = "Palavra")
-public class Palavra implements Serializable{
+public class Palavra implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -41,4 +41,5 @@ public class Palavra implements Serializable{
     public void setPalavra(String palavra) {
         this.palavra = palavra;
     }
+
 }

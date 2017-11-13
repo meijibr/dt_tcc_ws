@@ -2,6 +2,7 @@ package com.ufpr.dt.webservice.dt_tcc_webservice.entity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "Atividade")
@@ -33,6 +34,7 @@ public class Atividade implements Serializable {
         this.tipoAtividade = tipoAtividade;
         this.lista = lista;
         this.estado = "Aguardando";
+        pessoas = new ArrayList<Pessoa>();
     }
 
     public Long getId() {

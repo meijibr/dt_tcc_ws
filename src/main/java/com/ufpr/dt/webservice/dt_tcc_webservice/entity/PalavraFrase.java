@@ -12,6 +12,8 @@ public class PalavraFrase implements Serializable {
     private Long id;
     @Column(nullable = false, length = 250, name = "frase")
     private String frase;
+    @Column(length = 250, name = "traducao")
+    private String traducao;
     //bi-directional many-to-one association to Palavra
     @ManyToOne
     @JoinColumn(name="idPalavra")
@@ -39,5 +41,13 @@ public class PalavraFrase implements Serializable {
 
     public void setPalavra(Palavra palavra) {
         this.palavra = palavra;
+    }
+
+    public String getTraducao() {
+        return traducao;
+    }
+
+    public void setTraducao(String traducao) {
+        this.traducao = traducao;
     }
 }

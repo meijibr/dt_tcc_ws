@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity(name = "PessoaPalavra")
-public class PessoaPalavra implements Serializable {
+public class PessoaPalavra implements Serializable, Comparable<PessoaPalavra> {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -59,5 +59,22 @@ public class PessoaPalavra implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Override
+    public int compareTo(PessoaPalavra o) {
+        if (this.getAvaliacao() < o.getAvaliacao()){
+            return -1;
+        }
+        if (this.getAvaliacao() > o.getAvaliacao()){
+            return 1;
+        }
+        if (this.getQuantidade() < o.getQuantidade()){
+            return 1;
+        }
+        if (this.getQuantidade() > o.getQuantidade()){
+            return -1;
+        }
+        return 0;
     }
 }

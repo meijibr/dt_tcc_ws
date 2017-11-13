@@ -1,18 +1,24 @@
 package com.ufpr.dt.webservice.dt_tcc_webservice.service;
 
-import com.ufpr.dt.webservice.dt_tcc_webservice.entity.Atividade;
-import com.ufpr.dt.webservice.dt_tcc_webservice.entity.Pessoa;
-import com.ufpr.dt.webservice.dt_tcc_webservice.entity.TipoAtividade;
+import com.google.gson.Gson;
+import com.ufpr.dt.webservice.dt_tcc_webservice.dto.FraseAvaliacao;
+import com.ufpr.dt.webservice.dt_tcc_webservice.dto.Jogador;
+import com.ufpr.dt.webservice.dt_tcc_webservice.entity.*;
 import com.ufpr.dt.webservice.dt_tcc_webservice.repository.AtividadeRepository;
+import jdk.nashorn.internal.scripts.JO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class AtividadeService {
+
+    private Map<Long, Jogador> jogadores = new HashMap<Long, Jogador>();
 
     @Autowired
     private AtividadeRepository atividadeRepository;
@@ -26,12 +32,22 @@ public class AtividadeService {
     @Autowired
     private PessoaService pessoaService;
 
+    @Autowired
+    private PessoaPalavraService pessoaPalavraService;
+
+    @Autowired
+    private ListaPalavraFraseService listaPalavraFraseService;
+
+    @PersistenceContext
+    protected EntityManager em;
+
     public Atividade salvar(Atividade atividade) {
         atividadeRepository.saveAndFlush(atividade);
         return atividade;
     }
 
     public Atividade findByPin(Long pin) {
+        em.clear();
         return atividadeRepository.findByPin(pin);
     }
 
@@ -78,13 +94,53 @@ public class AtividadeService {
     public void adicionarPessoa(Atividade atividade, Long pessoa) {
         Pessoa p = pessoaService.findById(pessoa);
         if (atividade.getPessoas().contains(p)){
+            Jogador jogador = new Jogador(atividade.getPin());
+            if (jogadores.get(pessoa) == null) {
+                jogadores.put(pessoa, jogador);
+                System.out.printf("Antes " + new Gson().toJson(jogadores).toString());
+            }
             return;
         }
         atividade.addPessoa(p);
+        Jogador jogador = new Jogador(atividade.getPin());
+        jogadores.put(pessoa, jogador);
+        System.out.printf("Antes " + new Gson().toJson(jogadores).toString());
         salvar(atividade);
     }
 
     public void start(Atividade atividade) {
+        List<PalavraFrase> frases;
+        List<FraseAvaliacao> fraseAvaliacoes;
+        List<Pessoa> pessoas = atividade.getPessoas();
+        for (int i = 0; i < pessoas.size(); i++){
+            Pessoa p = pessoas.get(i);
+            frases = listaPalavraFraseService.getListPalavraFrase(atividade.getLista());
+            fraseAvaliacoes = new ArrayList<FraseAvaliacao>();
+            for (int j = 0; j < frases.size();j++){
+                FraseAvaliacao f = new FraseAvaliacao();
+                f.setAvaliacao(pessoaPalavraService.getAvaliacao(pessoas.get(i), frases.get(j).getPalavra()));
+                f.setFrase(frases.get(j).getFrase());
+                f.setFraseTraduzida(frases.get(j).getTraducao());
+                fraseAvaliacoes.add(f);
+            }
+            System.out.printf("Antes " + new Gson().toJson(fraseAvaliacoes).toString());
+            Collections.sort(fraseAvaliacoes);
+            jogadores.get(p.getId()).setOrdemPalavras(fraseAvaliacoes);
+            System.out.printf("Depois "+ new Gson().toJson(fraseAvaliacoes).toString());
+        }
+
+//        switch (atividade.getTipoAtividade().getAtividade()) {
+//            case "Revisão":
+//                System.out.printf("Revisao");
+//            break;
+//            case "Tradução":
+//                System.out.printf("Tradução");
+//                break;
+//            default:
+//                System.out.printf("Default");
+//                break;
+//        }
+
         atividade.setEstado("Pre-Frase");
         salvar(atividade);
     }
@@ -93,11 +149,9 @@ public class AtividadeService {
         if (atividade.getEstado().equals("Aguardando")) {
             Long pin = atividade.getPin();
             while (true) {
-                Atividade ativ = findByPin(pin);
                 Thread.sleep(1000);
                 atividade = findByPin(atividade.getPin());
-                atividadeRepository.flush();
-                System.out.println("Preso aqui " + atividade.getEstado() + ativ.getEstado());
+                System.out.println("Preso aqui " + atividade.getEstado());
                 if (atividade.getEstado().equals("Pre-Frase")){
                     break;
                 }
@@ -107,6 +161,21 @@ public class AtividadeService {
             return atividade;
         } else {
             return null;
+        }
+    }
+
+    public String proximaFrase(Atividade atividade, Long idPessoa){
+
+        switch (atividade.getTipoAtividade().getAtividade()) {
+            case "Revisão":
+                System.out.printf("Revisao");
+                return "Revisao";
+            case "Tradução":
+                System.out.printf("Tradução");
+                return "Tradução";
+            default:
+                System.out.printf("Default");
+                return "Default";
         }
     }
 }

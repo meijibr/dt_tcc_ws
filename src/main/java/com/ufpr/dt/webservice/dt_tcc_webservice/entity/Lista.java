@@ -1,9 +1,11 @@
 package com.ufpr.dt.webservice.dt_tcc_webservice.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity(name = "Lista")
 public class Lista implements Serializable {

@@ -95,7 +95,7 @@ public class AtividadeController {
         }
     }
 
-    //------------------- Proxima frase -------------------------------------------
+    //------------------- Esperar Inicio -------------------------------------------
 
     @RequestMapping(value = "/atividade/{pin}/pronto", method = RequestMethod.POST)
     public ResponseEntity<Atividade> startAtividade(@RequestParam Long pessoa, @PathVariable("pin") long pin) throws InterruptedException {
@@ -111,6 +111,21 @@ public class AtividadeController {
         return new ResponseEntity<Atividade>(atividade, HttpStatus.OK);
     }
 
+    //------------------- Proxima Frase -------------------------------------------
+
+    @RequestMapping(value = "/atividade/{pin}/proxima", method = RequestMethod.POST)
+    public ResponseEntity<String> proximaFrase(@RequestParam Long pessoa, @PathVariable("pin") long pin) throws InterruptedException {
+        System.out.println("Pegar proxima frase");
+        Atividade atividade = atividadeService.findByPin(pin);
+        if (atividade == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        String frase = atividadeService.proximaFrase(atividade, pessoa);
+        if (atividade == null){
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return new ResponseEntity<>(frase, HttpStatus.OK);
+    }
 
     //------------------- Update a User --------------------------------------------------------
 
