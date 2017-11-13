@@ -29,7 +29,9 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-web-services')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile 'com.google.code.gson:gson:2.8.0'
-	//runtime "org.hsqldb:hsqldb:2.3.3"
+
 	runtime('mysql:mysql-connector-java')
+
 	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile "org.hsqldb:hsqldb:2.3.3"
 }
