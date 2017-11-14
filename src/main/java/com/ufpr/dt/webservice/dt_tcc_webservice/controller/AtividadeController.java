@@ -1,7 +1,6 @@
 package com.ufpr.dt.webservice.dt_tcc_webservice.controller;
 
 import com.ufpr.dt.webservice.dt_tcc_webservice.entity.Atividade;
-import com.ufpr.dt.webservice.dt_tcc_webservice.entity.Pessoa;
 import com.ufpr.dt.webservice.dt_tcc_webservice.service.AtividadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -12,12 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
 public class AtividadeController {
-
 
     @Autowired
     AtividadeService atividadeService;  //Service which will do all data retrieval/manipulation work
@@ -48,17 +44,17 @@ public class AtividadeController {
         return new ResponseEntity<Atividade>(atividade, HttpStatus.OK);
     }
 
-
-
     //-------------------Create a Atividade--------------------------------------------------------
 
     @RequestMapping(value = "/atividade/criar", method = RequestMethod.POST)
-    public ResponseEntity<Atividade> createAtividade(@RequestParam("lista") Long idLista, @RequestParam("tipoAtividade") Long idTipoAtividade) {
+    public ResponseEntity<Atividade> createAtividade(@RequestParam("lista") Long idLista, @RequestParam("tipoAtividade") Long idTipoAtividade, UriComponentsBuilder ucBuilder) {
         System.out.println("Creating Atividade ");
         Atividade atividade = atividadeService.iniciarAtividade(idLista,idTipoAtividade);
         atividadeService.salvar(atividade);
 
-        return new ResponseEntity<Atividade>(atividade, HttpStatus.CREATED);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(ucBuilder.path("/pessoa/{id}").buildAndExpand(atividade.getId()).toUri());
+        return new ResponseEntity<Atividade>(atividade, headers, HttpStatus.CREATED);
     }
 
     //------------------- Inserindo Pessoa na Atividade -------------------------------------------
@@ -165,4 +161,21 @@ public class AtividadeController {
 //        atividadeService.delete(id);
 //        return new ResponseEntity<Pessoa>(HttpStatus.NO_CONTENT);
 //    }
+
+
+    //------------------- Delete a User --------------------------------------------------------
+
+    @RequestMapping(value = "/atividade/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Atividade> deleteUser(@PathVariable("id") long id) {
+        System.out.println("Fetching & Deleting User with id " + id);
+
+        Atividade atividade = atividadeService.findById(id);
+        if (atividade == null) {
+            System.out.println("Unable to delete. User with id " + id + " not found");
+            return new ResponseEntity<Atividade>(HttpStatus.NOT_FOUND);
+        }
+
+        atividadeService.delete(id);
+        return new ResponseEntity<Atividade>(HttpStatus.NO_CONTENT);
+    }
 }

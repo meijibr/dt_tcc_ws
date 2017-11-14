@@ -14,4 +14,12 @@ public class TipoAtividadeService {
     public TipoAtividade findById(Long id) {
         return tipoAtividadeRepository.findById(id);
     }
+
+    public TipoAtividade save(TipoAtividade tipoAtividade) {
+        return tipoAtividadeRepository.save(tipoAtividade);
+    }
+
+    public void delete(long id) {
+        tipoAtividadeRepository.delete(id);
+    }
 }
