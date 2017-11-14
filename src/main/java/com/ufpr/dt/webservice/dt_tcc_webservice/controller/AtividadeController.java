@@ -87,7 +87,7 @@ public class AtividadeController {
         if (atividade == null){
             return new ResponseEntity<Atividade>(HttpStatus.NOT_FOUND);
         }
-        if (atividade.getEstado().equals("Aguardando")) {
+        if ((atividade.getEstado().equals("Aguardando"))||(atividade.getEstado().equals("Impar"))) {
             atividadeService.start(atividade);
             return new ResponseEntity<Atividade>(atividade, HttpStatus.OK);
         } else {
@@ -120,12 +120,15 @@ public class AtividadeController {
         if (atividade == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
         String frase = atividadeService.proximaFrase(atividade, pessoa);
-        if (atividade == null){
+        if (frase == null){
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(frase, HttpStatus.OK);
         }
-        return new ResponseEntity<>(frase, HttpStatus.OK);
     }
+
 
     //------------------- Update a User --------------------------------------------------------
 

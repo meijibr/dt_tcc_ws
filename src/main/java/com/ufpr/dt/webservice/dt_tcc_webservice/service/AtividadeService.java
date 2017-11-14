@@ -129,17 +129,29 @@ public class AtividadeService {
             System.out.printf("Depois "+ new Gson().toJson(fraseAvaliacoes).toString());
         }
 
-//        switch (atividade.getTipoAtividade().getAtividade()) {
-//            case "Revisão":
-//                System.out.printf("Revisao");
-//            break;
-//            case "Tradução":
-//                System.out.printf("Tradução");
-//                break;
-//            default:
-//                System.out.printf("Default");
-//                break;
-//        }
+        switch (atividade.getTipoAtividade().getAtividade()) {
+            case "Revisão":
+                break;
+            case "Tradução":
+                List<Long> ids = new ArrayList<Long>(jogadores.keySet());
+                if (ids.size()/2 == 0) {
+                    Collections.shuffle(ids);
+                    while (ids.size() != 0){
+                        jogadores.get(ids.get(0)).setIdDupla(ids.get(1));
+                        jogadores.get(ids.get(1)).setIdDupla(ids.get(0));
+                        ids.remove(1);
+                        ids.remove(0);
+                    }
+                } else {
+                    atividade.setEstado("Impar");
+                    salvar(atividade);
+                    return;
+                }
+                break;
+            default:
+                System.out.printf("Errou");
+                break;
+        }
 
         atividade.setEstado("Pre-Frase");
         salvar(atividade);
@@ -165,16 +177,21 @@ public class AtividadeService {
     }
 
     public String proximaFrase(Atividade atividade, Long idPessoa){
-
+        Pessoa p = pessoaService.findById(idPessoa);
+        if (p == null) {
+            return null;
+        }
         switch (atividade.getTipoAtividade().getAtividade()) {
             case "Revisão":
-                System.out.printf("Revisao");
-                return "Revisao";
+                return jogadores.get(p.getId()).getProxima();
             case "Tradução":
-                System.out.printf("Tradução");
-                return "Tradução";
+                if (jogadores.get(p.getId()).isMinhaVez()){
+                    return jogadores.get(p.getId()).getProxima();
+                } else {
+                    return jogadores.get(jogadores.get(p.getId()).getIdDupla()).getTraducao();
+                }
             default:
-                System.out.printf("Default");
+                System.out.printf("Errou");
                 return "Default";
         }
     }

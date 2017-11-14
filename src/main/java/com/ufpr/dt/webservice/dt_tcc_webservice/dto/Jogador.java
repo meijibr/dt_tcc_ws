@@ -55,4 +55,12 @@ public class Jogador {
     public void setPin(Long pin) {
         this.pin = pin;
     }
+
+    public String getProxima() {
+        return this.ordemPalavras.get(0).getFrase();
+    }
+
+    public String getTraducao() {
+        return this.ordemPalavras.get(0).getFraseTraduzida();
+    }
 }
