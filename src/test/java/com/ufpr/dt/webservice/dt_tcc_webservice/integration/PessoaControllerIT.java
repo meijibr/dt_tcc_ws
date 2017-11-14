@@ -94,6 +94,7 @@ public class PessoaControllerIT {
         pessoa2.setEmail("outro_email@teste.com");
         ResponseEntity<Void> responseEntity2 = restTemplate.postForEntity(uri, pessoa2, Void.class);
         Assert.assertEquals(HttpStatus.CREATED, responseEntity2.getStatusCode());
+        patch = responseEntity2.getHeaders().getLocation().getPath();
         sanitizeIds.add(patch);
 
         pessoa2.setEmail(pessoa.getEmail());

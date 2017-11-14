@@ -48,4 +48,16 @@ public class PessoaService {
             return false;
         }
     }
+    public boolean repetidoUpdate(Pessoa atual, Pessoa atualizada) {
+        Pessoa p = findByEmail(atualizada.getEmail());
+        if (atual.getEmail().equals(atualizada.getEmail())) {
+            return false;
+        } else {
+            if (p != null) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 }
