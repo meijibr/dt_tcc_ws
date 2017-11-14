@@ -71,7 +71,7 @@ public class PessoaController {
     //------------------- Update a User --------------------------------------------------------
 
     @RequestMapping(value = "/pessoa/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<Pessoa> updateUser(@PathVariable("id") long id, @RequestBody Pessoa pessoa) {
+    public ResponseEntity<Pessoa> updateUser(@PathVariable("id") long id, @RequestBody Pessoa pessoaAtualizada) {
         System.out.println("Updating User " + id);
 
         Pessoa pessoaAtual = pessoaService.findById(id);
@@ -80,12 +80,14 @@ public class PessoaController {
             System.out.println("User with id " + id + " not found");
             return new ResponseEntity<Pessoa>(HttpStatus.NOT_FOUND);
         }
-
-
-        pessoaAtual.setNome(pessoa.getNome());
-        pessoaAtual.setSobrenome(pessoa.getSobrenome());
-        pessoaAtual.setSenha(pessoa.getSenha());
-        pessoaAtual.setEmail(pessoa.getEmail());
+        if (pessoaService.repetidoUpdate(pessoaAtual, pessoaAtualizada)) {
+            System.out.println("\nA User with email " + pessoaAtualizada.getEmail() + " already exist");
+            return new ResponseEntity<Pessoa>(HttpStatus.CONFLICT);
+        }
+        pessoaAtual.setNome(pessoaAtualizada.getNome());
+        pessoaAtual.setSobrenome(pessoaAtualizada.getSobrenome());
+        pessoaAtual.setSenha(pessoaAtualizada.getSenha());
+        pessoaAtual.setEmail(pessoaAtualizada.getEmail());
 
         pessoaService.salvar(pessoaAtual);
         return new ResponseEntity<Pessoa>(pessoaAtual, HttpStatus.OK);
