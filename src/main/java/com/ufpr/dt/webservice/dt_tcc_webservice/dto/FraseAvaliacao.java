@@ -1,9 +1,12 @@
 package com.ufpr.dt.webservice.dt_tcc_webservice.dto;
 
+import com.ufpr.dt.webservice.dt_tcc_webservice.entity.Palavra;
+
 public class FraseAvaliacao implements Comparable<FraseAvaliacao>{
     private Double avaliacao;
     private String frase;
     private String fraseTraduzida;
+    private Palavra palavra;
 
     public Double getAvaliacao() {
         return avaliacao;
@@ -38,5 +41,13 @@ public class FraseAvaliacao implements Comparable<FraseAvaliacao>{
             return 1;
         }
         return 0;
+    }
+
+    public void setPalavra(Palavra palavra) {
+        this.palavra = palavra;
+    }
+
+    public Palavra getPalavra() {
+        return palavra;
     }
 }

@@ -1,5 +1,6 @@
 package com.ufpr.dt.webservice.dt_tcc_webservice.dto;
 
+import com.ufpr.dt.webservice.dt_tcc_webservice.entity.Palavra;
 import com.ufpr.dt.webservice.dt_tcc_webservice.entity.PalavraFrase;
 
 import java.util.List;
@@ -60,7 +61,16 @@ public class Jogador {
         return this.ordemPalavras.get(0).getFrase();
     }
 
+    public Palavra getPalavra(){
+        return this.ordemPalavras.get(0).getPalavra();
+    }
+
     public String getTraducao() {
         return this.ordemPalavras.get(0).getFraseTraduzida();
+    }
+
+    public int removeRespondida() {
+        this.ordemPalavras.remove(0);
+        return this.ordemPalavras.size();
     }
 }

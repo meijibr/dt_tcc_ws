@@ -64,41 +64,41 @@ public class AtividadeController {
     //------------------- Inserindo Pessoa na Atividade -------------------------------------------
 
     @RequestMapping(value = "/atividade/{pin}/entrar", method = RequestMethod.POST)
-    public ResponseEntity<Atividade> createAtividade(@RequestParam Long idPessoa, @PathVariable("pin") long pin) {
+    public ResponseEntity<String> createAtividade(@RequestParam("pessoa") Long idPessoa, @PathVariable("pin") long pin) {
         System.out.println("Entrando na Atividade ");
         Atividade atividade = atividadeService.findByPin(pin);
         if (atividade == null){
-            return new ResponseEntity<Atividade>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
         if (atividade.getEstado().equals("Aguardando")) {
             atividadeService.adicionarPessoa(atividade, idPessoa);
-            return new ResponseEntity<Atividade>(atividade, HttpStatus.OK);
+            return new ResponseEntity<String>(atividade.getTipoAtividade().getAtividade(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<Atividade>(atividade, HttpStatus.FORBIDDEN);
+            return new ResponseEntity<String>(HttpStatus.FORBIDDEN);
         }
     }
 
     //------------------- Iniciar a Atividade -------------------------------------------
 
     @RequestMapping(value = "/atividade/{pin}/iniciar", method = RequestMethod.POST)
-    public ResponseEntity<Atividade> startAtividade(@PathVariable("pin") long pin) {
+    public ResponseEntity<String> startAtividade(@PathVariable("pin") long pin) {
         System.out.println("Iniciando a Atividade ");
         Atividade atividade = atividadeService.findByPin(pin);
         if (atividade == null){
-            return new ResponseEntity<Atividade>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         if ((atividade.getEstado().equals("Aguardando"))||(atividade.getEstado().equals("Impar"))) {
             atividadeService.start(atividade);
-            return new ResponseEntity<Atividade>(atividade, HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            return new ResponseEntity<Atividade>(atividade, HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 
     //------------------- Esperar Inicio -------------------------------------------
 
     @RequestMapping(value = "/atividade/{pin}/pronto", method = RequestMethod.POST)
-    public ResponseEntity<Atividade> startAtividade(@RequestParam Long pessoa, @PathVariable("pin") long pin) throws InterruptedException {
+    public ResponseEntity<Atividade> esperarAtividade(@PathVariable("pin") long pin) throws InterruptedException {
         System.out.println("Iniciando a Atividade ");
         Atividade atividade = atividadeService.findByPin(pin);
         if (atividade == null){
@@ -128,6 +128,46 @@ public class AtividadeController {
             return new ResponseEntity<>(frase, HttpStatus.OK);
         }
     }
+    //------------------- Traducao Frase -------------------------------------------
+
+    @RequestMapping(value = "/atividade/{pin}/traducao", method = RequestMethod.POST)
+    public ResponseEntity<String> traducaoFrase(@RequestParam Long pessoa, @PathVariable("pin") long pin) throws InterruptedException {
+        System.out.println("Pegar traducao da frase atual");
+        Atividade atividade = atividadeService.findByPin(pin);
+        if (atividade == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        String frase = atividadeService.traducaoFrase(atividade, pessoa);
+        if (frase == null){
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(frase, HttpStatus.OK);
+        }
+    }
+
+    //------------------- Responder frase -------------------------------------------
+
+    @RequestMapping(value = "/atividade/{pin}/responder", method = RequestMethod.POST)
+    public ResponseEntity<String> respostaFrase(@RequestParam Long pessoa, @RequestParam int resposta, @PathVariable("pin") long pin) throws InterruptedException {
+        System.out.println("Resgistrar resposta");
+        Atividade atividade = atividadeService.findByPin(pin);
+        if (atividade == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        switch (atividadeService.responder(atividade, pessoa,resposta)){
+            case 0:
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            case 1:
+                return new ResponseEntity<>(HttpStatus.OK);
+            case 2:
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            default:
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 
 
     //------------------- Update a User --------------------------------------------------------

@@ -21,6 +21,16 @@ public class PessoaPalavra implements Serializable, Comparable<PessoaPalavra> {
     @Column(nullable = false, name = "quantidade")
     private Integer quantidade;
 
+    public PessoaPalavra() {
+    }
+
+    public PessoaPalavra(Pessoa pessoa, Palavra palavra, Double avaliacao) {
+        this.pessoa = pessoa;
+        this.palavra = palavra;
+        this.avaliacao = avaliacao;
+        this.quantidade = 1;
+    }
+
     public Pessoa getPessoa() {
         return pessoa;
     }
@@ -76,5 +86,10 @@ public class PessoaPalavra implements Serializable, Comparable<PessoaPalavra> {
             return -1;
         }
         return 0;
+    }
+
+    public void updateAvaliacao(Double avaliacao) {
+        this.avaliacao = getAvaliacao() + avaliacao;
+        this.quantidade++;
     }
 }

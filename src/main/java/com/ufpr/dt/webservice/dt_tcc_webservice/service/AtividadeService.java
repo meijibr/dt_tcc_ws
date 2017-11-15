@@ -5,10 +5,8 @@ import com.ufpr.dt.webservice.dt_tcc_webservice.dto.FraseAvaliacao;
 import com.ufpr.dt.webservice.dt_tcc_webservice.dto.Jogador;
 import com.ufpr.dt.webservice.dt_tcc_webservice.entity.*;
 import com.ufpr.dt.webservice.dt_tcc_webservice.repository.AtividadeRepository;
-import jdk.nashorn.internal.scripts.JO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -121,6 +119,7 @@ public class AtividadeService {
                 f.setAvaliacao(pessoaPalavraService.getAvaliacao(pessoas.get(i), frases.get(j).getPalavra()));
                 f.setFrase(frases.get(j).getFrase());
                 f.setFraseTraduzida(frases.get(j).getTraducao());
+                f.setPalavra(frases.get(j).getPalavra());
                 fraseAvaliacoes.add(f);
             }
             System.out.printf("Antes " + new Gson().toJson(fraseAvaliacoes).toString());
@@ -158,17 +157,6 @@ public class AtividadeService {
     }
 
     public Atividade aguardarInicio(Atividade atividade) throws InterruptedException {
-        if (atividade.getEstado().equals("Aguardando")) {
-            Long pin = atividade.getPin();
-            while (true) {
-                Thread.sleep(1000);
-                atividade = findByPin(atividade.getPin());
-                System.out.println("Preso aqui " + atividade.getEstado());
-                if (atividade.getEstado().equals("Pre-Frase")){
-                    break;
-                }
-            }
-        }
         if (atividade.getEstado().equals("Pre-Frase")){
             return atividade;
         } else {
@@ -194,5 +182,43 @@ public class AtividadeService {
                 System.out.printf("Errou");
                 return "Default";
         }
+    }
+
+    public String traducaoFrase(Atividade atividade, Long idPessoa){
+        Pessoa p = pessoaService.findById(idPessoa);
+        if (p == null) {
+            return null;
+        }
+        return jogadores.get(p.getId()).getTraducao();
+    }
+
+    public int responder(Atividade atividade, Long pessoa, int resposta) {
+
+        switch (atividade.getTipoAtividade().getAtividade()) {
+            case "Revisão":
+                Jogador j = jogadores.get(pessoa);
+                double avaliacao;
+                switch (resposta) {
+                    case 1: //Facil
+                        avaliacao = 0.1;
+                        break;
+                    case 2: //Medio
+                        avaliacao = 0.01;
+                        break;
+                    case 3: //Dificil
+                        avaliacao = 0.001;
+                        break;
+                    default:
+                        return 0;
+                }
+                pessoaPalavraService.setAvaliacao(pessoaService.findById(pessoa), j.getPalavra(), avaliacao);
+                if (j.removeRespondida() > 0) {
+                    return 1; //Ainda tem palavras
+                }
+                return 2; // Acabou a lista
+            case "Tradução":
+
+        }
+        return 0;
     }
 }

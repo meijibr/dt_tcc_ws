@@ -23,4 +23,16 @@ public class PessoaPalavraService {
             return 0.0;
 
     }
+
+    public void setAvaliacao(Pessoa pessoa, Palavra palavra, Double avaliacao) {
+        PessoaPalavra p = pessoaPalavraRepository.findByPessoaAndPalavra(pessoa, palavra);
+        if (p == null) {
+            p = new PessoaPalavra(pessoa, palavra,avaliacao);
+            pessoaPalavraRepository.save(p);
+        } else {
+            p.updateAvaliacao(avaliacao);
+            pessoaPalavraRepository.save(p);
+        }
+    }
+
 }
