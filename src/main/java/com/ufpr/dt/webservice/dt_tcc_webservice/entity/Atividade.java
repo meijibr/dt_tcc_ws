@@ -22,6 +22,10 @@ public class Atividade implements Serializable {
     @ManyToOne
     @JoinColumn(name="idLista")
     private Lista lista;
+    @Column(name = "parear")
+    private int parear;
+    @Column(name = "pareou")
+    private int pareou;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<Pessoa> pessoas;
@@ -87,5 +91,21 @@ public class Atividade implements Serializable {
 
     public void addPessoa(Pessoa pessoa){
         pessoas.add(pessoa);
+    }
+
+    public int getParear() {
+        return parear;
+    }
+
+    public void setParear(int parear) {
+        this.parear = parear;
+    }
+
+    public int getPareou() {
+        return pareou;
+    }
+
+    public void setPareou(int pareou) {
+        this.pareou = pareou;
     }
 }

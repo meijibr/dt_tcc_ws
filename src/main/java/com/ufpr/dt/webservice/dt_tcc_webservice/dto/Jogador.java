@@ -1,7 +1,6 @@
 package com.ufpr.dt.webservice.dt_tcc_webservice.dto;
 
 import com.ufpr.dt.webservice.dt_tcc_webservice.entity.Palavra;
-import com.ufpr.dt.webservice.dt_tcc_webservice.entity.PalavraFrase;
 
 import java.util.List;
 
@@ -11,6 +10,9 @@ public class Jogador {
     private int pontos;
     private boolean minhaVez;
     private Long pin;
+    private int cont;
+    private int maxCont;
+    private volatile String cor;
 
     public Jogador(Long pin) {
         this.pin = pin;
@@ -37,8 +39,8 @@ public class Jogador {
         return pontos;
     }
 
-    public void setPontos(int pontos) {
-        this.pontos = pontos;
+    public void setPontos() {
+        this.pontos++;
     }
 
     public boolean isMinhaVez() {
@@ -71,6 +73,38 @@ public class Jogador {
 
     public int removeRespondida() {
         this.ordemPalavras.remove(0);
+        return this.ordemPalavras.size();
+    }
+
+    public int getCont() {
+        return cont;
+    }
+
+    public void setCont(int cont) {
+        this.cont = cont;
+    }
+
+    public void setCont() {
+        this.cont++;
+    }
+
+    public int getMaxCont() {
+        return maxCont;
+    }
+
+    public void setMaxCont(int maxCont) {
+        this.maxCont = maxCont;
+    }
+
+    public String getCor() {
+        return cor;
+    }
+
+    public void setCor(String cor) {
+        this.cor = cor;
+    }
+
+    public int getOrdemPalavrasSize(){
         return this.ordemPalavras.size();
     }
 }

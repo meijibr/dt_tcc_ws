@@ -18,7 +18,6 @@ public class AtividadeController {
     @Autowired
     AtividadeService atividadeService;  //Service which will do all data retrieval/manipulation work
 
-
     //-------------------Retrieve All Atividades--------------------------------------------------------
 
     @RequestMapping(value = "/atividade/", method = RequestMethod.GET)
@@ -85,7 +84,7 @@ public class AtividadeController {
         }
         if ((atividade.getEstado().equals("Aguardando"))||(atividade.getEstado().equals("Impar"))) {
             atividadeService.start(atividade);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(atividade.getTipoAtividade().getAtividade(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -94,34 +93,67 @@ public class AtividadeController {
     //------------------- Esperar Inicio -------------------------------------------
 
     @RequestMapping(value = "/atividade/{pin}/pronto", method = RequestMethod.POST)
-    public ResponseEntity<Atividade> esperarAtividade(@PathVariable("pin") long pin) throws InterruptedException {
-        System.out.println("Iniciando a Atividade ");
+    public ResponseEntity<String> esperarAtividade(@PathVariable("pin") long pin) throws InterruptedException {
+        System.out.println("Esperando a Atividade ");
         Atividade atividade = atividadeService.findByPin(pin);
         if (atividade == null){
-            return new ResponseEntity<Atividade>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
         atividade = atividadeService.aguardarInicio(atividade);
         if (atividade == null){
-            return new ResponseEntity<Atividade>(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<String>(HttpStatus.FORBIDDEN);
         }
-        return new ResponseEntity<Atividade>(atividade, HttpStatus.OK);
+        return new ResponseEntity<String>(atividade.getTipoAtividade().getAtividade(), HttpStatus.OK);
+    }
+
+    //------------------- Parear jogadores -------------------------------------------
+
+    @RequestMapping(value = "/atividade/{pin}/parear", method = RequestMethod.POST)
+    public ResponseEntity<String> parearJogadores(@RequestParam("pessoa") Long idPessoa, @PathVariable("pin") long pin) throws InterruptedException {
+        System.out.println("Pareando jogadores " + idPessoa);
+        Atividade atividade = atividadeService.findByPin(pin);
+        if (atividade == null){
+            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+        }
+        String s = atividadeService.reemparelhar(atividade, idPessoa);
+        if (s == null){
+            return new ResponseEntity<String>(HttpStatus.FORBIDDEN);
+        }
+        if (atividade.getParear()==0) {
+            return new ResponseEntity<String>(s, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     //------------------- Proxima Frase -------------------------------------------
 
     @RequestMapping(value = "/atividade/{pin}/proxima", method = RequestMethod.POST)
     public ResponseEntity<String> proximaFrase(@RequestParam Long pessoa, @PathVariable("pin") long pin) throws InterruptedException {
-        System.out.println("Pegar proxima frase");
+        System.out.println("Pegar proxima frase " + pessoa);
         Atividade atividade = atividadeService.findByPin(pin);
-        if (atividade == null){
+        if (atividade == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         String frase = atividadeService.proximaFrase(atividade, pessoa);
-        if (frase == null){
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        if (frase == null) {
+            if (atividadeService.fimDaLista(pessoa)) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>(HttpStatus.RESET_CONTENT);
+            }
         } else {
-            return new ResponseEntity<>(frase, HttpStatus.OK);
+            switch (atividadeService.minhaVez(pessoa)) {
+                case 2:
+                    return new ResponseEntity<>(HttpStatus.RESET_CONTENT);
+                case 1:
+                    return new ResponseEntity<String>(frase, HttpStatus.OK);
+                case 0:
+                    return new ResponseEntity<String>(frase, HttpStatus.ACCEPTED);
+                default:
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
         }
     }
     //------------------- Traducao Frase -------------------------------------------
@@ -136,7 +168,11 @@ public class AtividadeController {
 
         String frase = atividadeService.traducaoFrase(atividade, pessoa);
         if (frase == null){
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            if (atividadeService.fimDaLista(pessoa)) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
         } else {
             return new ResponseEntity<>(frase, HttpStatus.OK);
         }
@@ -146,7 +182,7 @@ public class AtividadeController {
 
     @RequestMapping(value = "/atividade/{pin}/responder", method = RequestMethod.POST)
     public ResponseEntity<String> respostaFrase(@RequestParam Long pessoa, @RequestParam int resposta, @PathVariable("pin") long pin) throws InterruptedException {
-        System.out.println("Resgistrar resposta");
+        System.out.println("Resgistrar resposta "+pessoa);
         Atividade atividade = atividadeService.findByPin(pin);
         if (atividade == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -161,6 +197,26 @@ public class AtividadeController {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             default:
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    //------------------- Minha Vez -------------------------------------------
+
+    @RequestMapping(value = "/atividade/{pin}/minhavez", method = RequestMethod.POST)
+    public ResponseEntity<String> respostaFrase(@RequestParam Long pessoa, @PathVariable("pin") long pin) throws InterruptedException {
+//        System.out.println("Verificar vez");
+        Atividade atividade = atividadeService.findByPin(pin);
+        if (atividade == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        switch (atividadeService.minhaVez(pessoa)) {
+            case 2:
+                return new ResponseEntity<>(HttpStatus.RESET_CONTENT);
+            case 1:
+                return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            default:
+                return new ResponseEntity<>(HttpStatus.OK);
         }
     }
 
