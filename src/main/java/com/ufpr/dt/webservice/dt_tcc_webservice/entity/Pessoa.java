@@ -5,6 +5,9 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @Entity(name = "Pessoa")
@@ -61,7 +64,15 @@ public class Pessoa implements Serializable{
 
 
     public String getSenha() {
-        return senha;
+        MessageDigest m = null;
+        try {
+            m = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        m.update(senha.getBytes(),0,senha.length());
+
+        return new BigInteger(1,m.digest()).toString(16);
     }
 
     public void setSenha(String senha) {

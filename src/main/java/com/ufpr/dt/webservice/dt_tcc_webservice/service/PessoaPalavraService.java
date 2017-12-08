@@ -13,6 +13,17 @@ public class PessoaPalavraService {
     @Autowired
     PessoaPalavraRepository pessoaPalavraRepository;
 
+
+    public int getQuantidade(Pessoa pessoa,Palavra palavra){
+        PessoaPalavra p = pessoaPalavraRepository.findByPessoaAndPalavra(pessoa, palavra);
+        if (p != null) {
+            if (p.getQuantidade() != null){
+                return p.getQuantidade();
+            }
+        }
+        return 0;
+    }
+
     public Double getAvaliacao(Pessoa pessoa, Palavra palavra){
         PessoaPalavra p = pessoaPalavraRepository.findByPessoaAndPalavra(pessoa, palavra);
         if (p != null) {
@@ -21,7 +32,6 @@ public class PessoaPalavraService {
             }
         }
             return 0.0;
-
     }
 
     public void setAvaliacao(Pessoa pessoa, Palavra palavra, Double avaliacao) {
@@ -34,5 +44,4 @@ public class PessoaPalavraService {
             pessoaPalavraRepository.save(p);
         }
     }
-
 }

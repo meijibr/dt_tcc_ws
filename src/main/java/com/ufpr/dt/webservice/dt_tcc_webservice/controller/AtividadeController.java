@@ -49,11 +49,23 @@ public class AtividadeController {
     public ResponseEntity<Atividade> createAtividade(@RequestParam("lista") Long idLista, @RequestParam("tipoAtividade") Long idTipoAtividade, UriComponentsBuilder ucBuilder) {
         System.out.println("Creating Atividade ");
         Atividade atividade = atividadeService.iniciarAtividade(idLista,idTipoAtividade);
-        atividadeService.salvar(atividade);
-
+        atividade = atividadeService.salvar(atividade);
+        atividadeService.criarAtividade(atividade);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(ucBuilder.path("/pessoa/{id}").buildAndExpand(atividade.getId()).toUri());
         return new ResponseEntity<Atividade>(atividade, headers, HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/atividade/{pin}/criar", method = RequestMethod.GET)
+    public ResponseEntity<String> createAtividade(@PathVariable("pin") long pin) {
+        System.out.println("Creating Atividade get");
+
+        Atividade atividade = atividadeService.findByPin(pin);
+        if (atividade == null){
+            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+        }
+        atividadeService.criarAtividade(atividade);
+        return new ResponseEntity<String>(HttpStatus.OK);
     }
 
     //------------------- Inserindo Pessoa na Atividade -------------------------------------------
@@ -65,11 +77,13 @@ public class AtividadeController {
         if (atividade == null){
             return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
-        if (atividade.getEstado().equals("Aguardando")) {
+        if (atividade.getEstado().equals("finalizada")) {
+
+            return new ResponseEntity<String>(HttpStatus.FORBIDDEN);
+        } else {
             atividadeService.adicionarPessoa(atividade, idPessoa);
             return new ResponseEntity<String>(atividade.getTipoAtividade().getAtividade(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<String>(HttpStatus.FORBIDDEN);
+
         }
     }
 
@@ -77,6 +91,21 @@ public class AtividadeController {
 
     @RequestMapping(value = "/atividade/{pin}/iniciar", method = RequestMethod.POST)
     public ResponseEntity<String> startAtividade(@PathVariable("pin") long pin) {
+        System.out.println("Iniciando a Atividade ");
+        Atividade atividade = atividadeService.findByPin(pin);
+        if (atividade == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        if ((atividade.getEstado().equals("Aguardando"))||(atividade.getEstado().equals("Impar"))) {
+            atividadeService.start(atividade);
+            return new ResponseEntity<>(atividade.getTipoAtividade().getAtividade(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @RequestMapping(value = "/atividade/{pin}/iniciar", method = RequestMethod.GET)
+    public ResponseEntity<String> startAtividadeGet(@PathVariable("pin") long pin) {
         System.out.println("Iniciando a Atividade ");
         Atividade atividade = atividadeService.findByPin(pin);
         if (atividade == null){
@@ -138,21 +167,28 @@ public class AtividadeController {
 
         String frase = atividadeService.proximaFrase(atividade, pessoa);
         if (frase == null) {
-            if (atividadeService.fimDaLista(pessoa)) {
+            if (atividadeService.fimDaLista(atividade, pessoa)) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else {
                 return new ResponseEntity<>(HttpStatus.RESET_CONTENT);
             }
         } else {
-            switch (atividadeService.minhaVez(pessoa)) {
-                case 2:
-                    return new ResponseEntity<>(HttpStatus.RESET_CONTENT);
-                case 1:
+            switch (atividade.getTipoAtividade().getAtividade()) {
+                case "Revisão":
                     return new ResponseEntity<String>(frase, HttpStatus.OK);
-                case 0:
-                    return new ResponseEntity<String>(frase, HttpStatus.ACCEPTED);
-                default:
-                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                case "Tradução":
+                    switch (atividadeService.minhaVez(atividade, pessoa)) {
+                        case 2:
+                            return new ResponseEntity<>(HttpStatus.RESET_CONTENT);
+                        case 1:
+                            return new ResponseEntity<String>(frase, HttpStatus.OK);
+                        case 0:
+                            return new ResponseEntity<String>(frase, HttpStatus.ACCEPTED);
+                        default:
+                            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                    }
+                    default:
+                        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
         }
     }
@@ -168,7 +204,7 @@ public class AtividadeController {
 
         String frase = atividadeService.traducaoFrase(atividade, pessoa);
         if (frase == null){
-            if (atividadeService.fimDaLista(pessoa)) {
+            if (atividadeService.fimDaLista(atividade, pessoa)) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -210,7 +246,7 @@ public class AtividadeController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        switch (atividadeService.minhaVez(pessoa)) {
+        switch (atividadeService.minhaVez(atividade, pessoa)) {
             case 2:
                 return new ResponseEntity<>(HttpStatus.RESET_CONTENT);
             case 1:

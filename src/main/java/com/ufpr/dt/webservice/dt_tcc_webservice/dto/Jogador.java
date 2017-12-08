@@ -17,6 +17,7 @@ public class Jogador {
     public Jogador(Long pin) {
         this.pin = pin;
         this.pontos = 0;
+        this.minhaVez = true;
     }
 
     public Long getIdDupla() {
@@ -60,7 +61,11 @@ public class Jogador {
     }
 
     public String getProxima() {
-        return this.ordemPalavras.get(0).getFrase();
+        if(getOrdemPalavrasSize() > 0) {
+            return this.ordemPalavras.get(0).getFrase();
+        } else {
+            return null;
+        }
     }
 
     public Palavra getPalavra(){
