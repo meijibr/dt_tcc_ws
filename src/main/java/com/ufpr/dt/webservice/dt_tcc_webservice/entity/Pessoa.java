@@ -34,7 +34,10 @@ public class Pessoa implements Serializable{
     @OneToMany(mappedBy="pessoa")
     @JsonManagedReference
     private List<Lista> listas;
-
+    //bi-directional many-to-one association to Lista
+    @OneToMany(mappedBy="pessoa")
+    @JsonManagedReference
+    private List<Atividade> atividades;
 
     public Long getId() {
         return id;
@@ -94,6 +97,14 @@ public class Pessoa implements Serializable{
 
     public void setListas(List<Lista> listas) {
         this.listas = listas;
+    }
+
+    public List<Atividade> getAtividades() {
+        return atividades;
+    }
+
+    public void setAtividades(List<Atividade> atividades) {
+        this.atividades = atividades;
     }
 }
 

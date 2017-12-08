@@ -1,5 +1,9 @@
 package com.ufpr.dt.webservice.dt_tcc_webservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,6 +26,10 @@ public class Atividade implements Serializable {
     @ManyToOne
     @JoinColumn(name="idLista")
     private Lista lista;
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name="idPessoa")
+    private Pessoa pessoa;
     @Column(name = "parear")
     private int parear;
     @Column(name = "pareou")
@@ -30,6 +38,7 @@ public class Atividade implements Serializable {
     private int rounds;
 
     @OneToMany(cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("atividades")
     private List<Pessoa> pessoas;
 
     public Atividade(){
@@ -117,5 +126,13 @@ public class Atividade implements Serializable {
 
     public void setRounds(int rounds) {
         this.rounds = rounds;
+    }
+
+    public Pessoa getPessoa() {
+        return pessoa;
+    }
+
+    public void setPessoa(Pessoa pessoa) {
+        this.pessoa = pessoa;
     }
 }
